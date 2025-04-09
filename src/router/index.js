@@ -1,5 +1,5 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../store/auth'
 
 const routes = [
   {
@@ -11,16 +11,19 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('../pages/DashboardPage.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/users',
     name: 'UserManagement',
     component: () => import('../pages/UserManagementPage.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/licenses',
     name: 'LicenseManagement',
     component: () => import('../pages/LicenseManagementPage.vue'),
+    meta: { requiresAuth: true },
   },
 ]
 
@@ -29,4 +32,15 @@ const router = createRouter({
   routes,
 })
 
+router.beforeEach((to, from, next) => {
+  const auth = useAuthStore()
+  if (to.meta.requiresAuth && !auth.user) {
+    next('/')
+  } else {
+    next()
+  }
+})
+
 export default router
+
+
