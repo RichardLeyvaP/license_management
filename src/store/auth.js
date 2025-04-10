@@ -12,16 +12,13 @@ export const useAuthStore = defineStore('auth', () => {
     const foundUser = users.find(
       (u) => u.username === username && u.password === password
     )
-    if (!foundUser) {
-      alert('Credenciales incorrectas')
-    }
 
     if (!foundUser) {
-      throw new Error('Credenciales incorrectas')
+      throw new Error('Credenciais incorretas')
     }
 
     if (!canUserLogin(username, foundUser.licenseType, date)) {
-      throw new Error('Límite de accesos diarios alcanzado para licencias Login-Based')
+      throw new Error('Limite diário de acesso atingido para licenças Login-Based')
     }
 
     if (foundUser.licenseType === 'login-based') {

@@ -1,66 +1,133 @@
+
 <template>
-  <div class="dashboard">
-    <!-- Sidebar -->
-    <aside :class="{ collapsed: isCollapsed }" class="sidebar">
-      <button class="toggle-btn" @click="isCollapsed = !isCollapsed">
-        <span v-if="isCollapsed">☰</span>
-        <span v-else>✖</span>
-      </button>
-      <ul>
-        <li @click="selectedView = 'licenses'">
-          <i class="icon">🔐</i>
-          <span v-if="!isCollapsed">Gestión de Licencias</span>
-        </li>
-        <li @click="selectedView = 'users'">
-          <i class="icon">👥</i>
-          <span v-if="!isCollapsed">Gestión de Usuarios</span>
-        </li>
-      </ul>
-    </aside>
+  <v-layout>
+   <!-- Menú lateral -->
+<v-navigation-drawer app v-model="drawer" temporary>
+  <v-list dense>
+    <v-list-item>
+      <v-list-item-title class="text-h6">Menú</v-list-item-title>
+    </v-list-item>
 
-    <!-- Main Content -->
-    <div class="main">
-      <!-- AppBar -->
-      <header class="appbar">
-  <div class="left-section">
-    <i class="icon">🔔</i>
-  </div>
-  <div class="right-section">
-    <img src="https://es.vidnoz.com/img/ai-talking-avatar/tips-default.png" alt="avatar" class="avatar" />
-    <button @click="logout" class="logout-btn" title="Salir">⏻</button>
+    <v-divider class="my-2" />
 
-  </div>
-</header>
+    <v-list-item link @click="openModal('Gerenciamento de usuários')">
+      <v-list-item-title><v-icon>mdi-account-group</v-icon> Usuários</v-list-item-title>
+
+</v-list-item>
 
 
-      <!-- Content Area -->
-      <div class="content">
-        <!-- Responsive Cards (optional preview) -->
-        
+    <v-list-item link @click="openModal(' Gerenciamento de licenças')">
+      
+      <v-list-item-title><v-icon>mdi-certificate</v-icon> Licenças</v-list-item-title>
 
-        <!-- Dynamic Content -->
-        <div class="dynamic-content">
-          <div v-if="selectedView === 'licenses'">
-            <LicenseManagementPage />
-          </div>
-          <div v-else-if="selectedView === 'users'">
-            <UserManagementPage />
-          </div>
-          <div v-else>
-            <h2>Bienvenido</h2>
-            <p>Selecciona una opción del menú.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    </v-list-item>
+  </v-list>
+</v-navigation-drawer>
+
+<!-- Modal -->
+<v-dialog v-model="dialog" max-width="400">
+  <v-card>
+    <v-card-title class="text-h6">{{ modalContent }}</v-card-title>
+    <v-card-text>
+      Aquí va una pequeña descripción o detalle que quieras mostrar en el modal.
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer />
+      <v-btn color="primary" text @click="dialog = false">Cerrar</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
+
+    <!-- Barra superior -->
+    <v-app-bar color="info" density="comfortable" app>
+      <v-app-bar-nav-icon @click="drawer = !drawer" />
+
+      <v-app-bar-title  >Digiteam Field Service</v-app-bar-title>
+
+      <v-spacer />
+
+      <v-btn color="error" @click="logout" class="mr-4">
+        <v-icon left>mdi-logout</v-icon>
+        Cerrar sesión
+      </v-btn>
+    </v-app-bar>
+
+    <!-- Contenido principal -->
+    <v-container>
+    <v-main>
+      <v-container fluid class="pa-4">
+        <v-row>
+          <v-col cols="12" md="6" class="mx-auto">
+            <v-card
+              class="mb-4"
+              density="compact"
+              prepend-avatar="https://randomuser.me/api/portraits/women/10.jpg"
+              subtitle="Salsa, merengue, y cumbia"
+              title="Cuba"
+              variant="text"
+              border
+            >
+              <v-img height="180" src="https://picsum.photos/512/128?image=660" cover />
+
+              <v-card-text>
+                During my last trip to South America, I spent 2 weeks traveling through Patagonia in Chile.
+              </v-card-text>
+
+              <template v-slot:actions>
+                <v-btn color="primary" variant="text">View More</v-btn>
+                <v-btn color="primary" variant="text">See in Map</v-btn>
+              </template>
+            </v-card>
+          </v-col>
+
+          <v-col cols="12" md="6" class="mx-auto">
+            <v-card
+              class="mb-4"
+              density="comfortable"
+              prepend-avatar="https://randomuser.me/api/portraits/women/17.jpg"
+              subtitle="Salsa, merengue, y cumbia"
+              title="Florida"
+              variant="text"
+              border
+            >
+              <v-img height="180" src="https://picsum.photos/512/128?random" cover />
+
+              <v-card-text>
+                During my last trip to Florida, I spent 2 weeks traveling through the Everglades.
+              </v-card-text>
+
+              <template v-slot:actions>
+                <v-btn color="primary" variant="text">View More</v-btn>
+                <v-btn color="primary" variant="text">See in Map</v-btn>
+              </template>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
+    </v-container>
+  </v-layout>
 </template>
+
+
+
+
+
+
+
+
 
 <script setup>
 import { ref } from 'vue'
 import LicenseManagementPage from '@/pages/LicenseManagementPage.vue'
 import UserManagementPage from '@/pages/UserManagementPage.vue'
 import { useAuthStore } from '../store/auth'
+
+const drawer = ref(false)
+const dialog = ref(false)
+const modalContent = ref('')
+
 
 const auth = useAuthStore()
 
@@ -70,6 +137,15 @@ const selectedView = ref(null)
 const logout = () => {
   auth.logout()
 }
+
+
+
+function openModal(content) {
+  modalContent.value = content
+  dialog.value = true
+  drawer.value = false 
+}
+
 </script>
 
 <style scoped>

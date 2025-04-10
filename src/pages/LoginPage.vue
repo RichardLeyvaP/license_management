@@ -200,11 +200,12 @@ export default {
         };
 
 
-        await this.auth.login({
+       var result =  await this.auth.login({
       username: this.editedItem.email,
       password: this.editedItem.password,
       date: this.accessDate
     })
+    alert(result.data.message);
         
       } catch (error) {
         this.showAlert('warning', error.message || 'Error inesperado', 2000);
