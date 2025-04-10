@@ -8,13 +8,10 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = ({ username, password, date }) => {
     const users = getUsers()
-    alert('Users: ' + JSON.stringify(users));
-    console.log('Usuarios cargados:', users)
-   // alert('Login attempt: ' + username + ' ' + password + ' ' + date);
+
     const foundUser = users.find(
       (u) => u.username === username && u.password === password
     )
-    alert ('Found user: ' + JSON.stringify(foundUser));
     if (!foundUser) {
       alert('Credenciales incorrectas')
     }
