@@ -36,12 +36,7 @@
       <!-- Content Area -->
       <div class="content">
         <!-- Responsive Cards (optional preview) -->
-        <div class="cards">
-          <div class="card">Card 1</div>
-          <div class="card">Card 2</div>
-          <div class="card">Card 3</div>
-          <div class="card">Card 4</div>
-        </div>
+        
 
         <!-- Dynamic Content -->
         <div class="dynamic-content">

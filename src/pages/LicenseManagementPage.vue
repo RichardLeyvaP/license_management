@@ -7,7 +7,7 @@
         id="seatLicense"
         type="number"
         v-model.number="seatLicenses"
-        min="0"
+        min="1"
       />
 
       <label for="loginLicense">Login-based licenses:</label>
@@ -35,23 +35,30 @@ const seatLicenses = ref(0)
 const loginLicenses = ref(0)
 
 onMounted(() => {
-  const saved = JSON.parse(localStorage.getItem('licenseConfig'))
+  const saved = JSON.parse(localStorage.getItem('license_config'))
   if (saved) {
-    seatLicenses.value = saved.seat
-    loginLicenses.value = saved.login
+    seatLicenses.value = saved.seatBased
+    loginLicenses.value = saved.loginBased
   }
 })
 
 function saveLicenses() {
+  if (seatLicenses.value < 1) {
+    alert('Debe haber al menos 1 licencia seat-based (reservada para el administrador).')
+    seatLicenses.value = 1
+    return
+  }
+
   localStorage.setItem(
-    'licenseConfig',
+    'license_config',
     JSON.stringify({
-      seat: seatLicenses.value,
-      login: loginLicenses.value,
+      seatBased: seatLicenses.value,
+      loginBased: loginLicenses.value,
     })
   )
   alert('Licenses saved successfully!')
 }
+
 </script>
 
 <style scoped>

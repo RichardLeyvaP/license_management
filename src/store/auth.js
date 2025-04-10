@@ -5,6 +5,44 @@ import router from '../router'
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
 
+
+  const login = ({ username, password, date }) => {
+    const users = getUsers()
+    alert('Users: ' + JSON.stringify(users));
+    console.log('Usuarios cargados:', users)
+   // alert('Login attempt: ' + username + ' ' + password + ' ' + date);
+    const foundUser = users.find(
+      (u) => u.username === username && u.password === password
+    )
+    alert ('Found user: ' + JSON.stringify(foundUser));
+    if (!foundUser) {
+      alert('Credenciales incorrectas')
+    }
+
+    if (!foundUser) {
+      throw new Error('Credenciales incorrectas')
+    }
+
+    if (!canUserLogin(username, foundUser.licenseType, date)) {
+      throw new Error('Límite de accesos diarios alcanzado para licencias Login-Based')
+    }
+
+    if (foundUser.licenseType === 'login-based') {
+      recordUserLogin(username, date)
+    }
+
+    user.value = foundUser
+    localStorage.setItem('user', JSON.stringify(user.value))
+    router.push('/dashboard')
+  }
+
+  const logout = () => {
+    user.value = null
+    localStorage.removeItem('user')
+    router.push('/')
+  }
+
+
   const getUsers = () => {
     const data = localStorage.getItem('users')
     return data ? JSON.parse(data) : []
@@ -47,41 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const login = ({ username, password, date }) => {
-    const users = getUsers()
-    alert('Users: ' + JSON.stringify(users));
-    console.log('Usuarios cargados:', users)
-   // alert('Login attempt: ' + username + ' ' + password + ' ' + date);
-    const foundUser = users.find(
-      (u) => u.username === username && u.password === password
-    )
-    alert ('Found user: ' + JSON.stringify(foundUser));
-    if (!foundUser) {
-      alert('Credenciales incorrectas')
-    }
-
-    if (!foundUser) {
-      throw new Error('Credenciales incorrectas')
-    }
-
-    if (!canUserLogin(username, foundUser.licenseType, date)) {
-      throw new Error('Límite de accesos diarios alcanzado para licencias Login-Based')
-    }
-
-    if (foundUser.licenseType === 'login-based') {
-      recordUserLogin(username, date)
-    }
-
-    user.value = foundUser
-    localStorage.setItem('user', JSON.stringify(user.value))
-    router.push('/dashboard')
-  }
-
-  const logout = () => {
-    user.value = null
-    localStorage.removeItem('user')
-    router.push('/')
-  }
+  
 
   const loadUserFromStorage = () => {
     const savedUser = localStorage.getItem('user')
