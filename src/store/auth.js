@@ -5,15 +5,76 @@ import router from '../router'
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
 
-  const login = (credentials) => {
-    // Simulamos login: en una app real, se llamaría a la API
-    if (credentials.username === 'admin' && credentials.password === '123456') {
-      user.value = { name: 'Administrador', role: 'admin' }
-      localStorage.setItem('user', JSON.stringify(user.value))
-      router.push('/dashboard')
-    } else {
+  const getUsers = () => {
+    const data = localStorage.getItem('users')
+    return data ? JSON.parse(data) : []
+  }
+
+  const getLicenseConfig = () => {
+    const data = localStorage.getItem('license_config')
+    return data ? JSON.parse(data) : { seatBased: 0, loginBased: 0 }
+  }
+
+  const getDailyLogins = () => {
+    const data = localStorage.getItem('daily_logins')
+    return data ? JSON.parse(data) : {}
+  }
+
+  const saveDailyLogins = (logins) => {
+    localStorage.setItem('daily_logins', JSON.stringify(logins))
+  }
+
+  const canUserLogin = (username, licenseType, accessDate) => {
+    if (licenseType === 'seat-based') return true
+
+    const dailyLogins = getDailyLogins()
+    const todayLogins = dailyLogins[accessDate] || []
+
+    if (todayLogins.includes(username)) return true // ya logueado hoy
+
+    const { loginBased } = getLicenseConfig()
+    return todayLogins.length < loginBased
+  }
+
+  const recordUserLogin = (username, accessDate) => {
+    const dailyLogins = getDailyLogins()
+    const todayLogins = dailyLogins[accessDate] || []
+
+    if (!todayLogins.includes(username)) {
+      todayLogins.push(username)
+      dailyLogins[accessDate] = todayLogins
+      saveDailyLogins(dailyLogins)
+    }
+  }
+
+  const login = ({ username, password, date }) => {
+    const users = getUsers()
+    alert('Users: ' + JSON.stringify(users));
+    console.log('Usuarios cargados:', users)
+   // alert('Login attempt: ' + username + ' ' + password + ' ' + date);
+    const foundUser = users.find(
+      (u) => u.username === username && u.password === password
+    )
+    alert ('Found user: ' + JSON.stringify(foundUser));
+    if (!foundUser) {
+      alert('Credenciales incorrectas')
+    }
+
+    if (!foundUser) {
       throw new Error('Credenciales incorrectas')
     }
+
+    if (!canUserLogin(username, foundUser.licenseType, date)) {
+      throw new Error('Límite de accesos diarios alcanzado para licencias Login-Based')
+    }
+
+    if (foundUser.licenseType === 'login-based') {
+      recordUserLogin(username, date)
+    }
+
+    user.value = foundUser
+    localStorage.setItem('user', JSON.stringify(user.value))
+    router.push('/dashboard')
   }
 
   const logout = () => {
@@ -29,5 +90,10 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { user, login, logout, loadUserFromStorage }
+  return {
+    user,
+    login,
+    logout,
+    loadUserFromStorage
+  }
 })

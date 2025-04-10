@@ -20,13 +20,33 @@
     </form>
 
     <div class="user-list">
-      <h3>Registered Users:</h3>
-      <ul>
-        <li v-for="user in users" :key="user.username">
-          {{ user.username }} ({{ user.licenseType }})
-        </li>
-      </ul>
+  <h3>Registered Users:</h3>
+  <ul>
+    <li v-for="user in users" :key="user.username" class="user-item">
+  <span>{{ user.username }} ({{ user.licenseType }})</span>
+
+  <span
+    v-if="user.username !== 'admin'"
+    class="delete-icon"
+    @click="confirmDelete(user.username)"
+  >
+    <span class="material-icons">delete</span>
+  </span>
+</li>
+  </ul>
+</div>
+
+<div v-if="showModal" class="modal-overlay">
+  <div class="modal">
+    <p>¿Estás seguro de que quieres eliminar al usuario <strong>{{ userToDelete }}</strong>?</p>
+    <div class="modal-actions">
+      <button @click="deleteUser">Sí, eliminar</button>
+      <button @click="cancelDelete">Cancelar</button>
     </div>
+  </div>
+</div>
+
+
   </div>
 </template>
 
@@ -39,32 +59,76 @@ const licenseType = ref('seat')
 const cpf = ref('')
 const email = ref('')
 const users = ref([])
+const showModal = ref(false)
+const userToDelete = ref(null)
 
-const maxLoginUsers = () => {
-  const licenses = JSON.parse(localStorage.getItem('licenseConfig')) || {}
-  return (licenses.login || 0) * 3
-}
+
+
 
 onMounted(() => {
   users.value = JSON.parse(localStorage.getItem('users')) || []
 })
+
+function confirmDelete(username) {
+  userToDelete.value = username
+  showModal.value = true
+}
+
+function cancelDelete() {
+  showModal.value = false
+  userToDelete.value = null
+}
+
+function deleteUser() {
+  users.value = users.value.filter(u => u.username !== userToDelete.value)
+  localStorage.setItem('users', JSON.stringify(users.value))
+  cancelDelete()
+}
+
+function getLicenseConfig() {
+  return JSON.parse(localStorage.getItem('license_config')) || {
+    seatBased: 0,
+    loginBased: 0
+  }
+}
+
+function getMaxLoginUsers() {
+  const config = getLicenseConfig()
+  return config.loginBased * 3
+}
 
 function isValidUser() {
   const exists = users.value.some(u => u.username === username.value)
   const nameValid = /^[a-zA-Z0-9]{1,10}$/.test(username.value)
   const passValid = /^(?=.*[A-Z])(?=.*\d).{3,}$/.test(password.value)
 
-  if (!nameValid) return alert('Invalid username (only alphanum, max 10)')
-  if (exists) return alert('Username already exists')
-  if (!passValid) return alert('Password must be 3+ chars with 1 uppercase and 1 digit')
+  if (!nameValid) {
+    alert('Nombre de usuario inválido (solo alfanumérico, máx. 10 caracteres)')
+    return false
+  }
+  if (exists) {
+    alert('Este nombre de usuario ya existe')
+    return false
+  }
+  if (!passValid) {
+    alert('Contraseña inválida (mín. 3 caracteres, 1 mayúscula y 1 número)')
+    return false
+  }
+
+  const config = getLicenseConfig()
 
   if (licenseType.value === 'seat') {
-    const licenses = JSON.parse(localStorage.getItem('licenseConfig')) || {}
-    const used = users.value.filter(u => u.licenseType === 'seat').length
-    if (used >= (licenses.seat || 0)) return alert('No more seat licenses available')
+    const used = users.value.filter(u => u.licenseType === 'seat-based').length
+    if (used >= config.seatBased) {
+      alert('No hay más licencias Seat-Based disponibles')
+      return false
+    }
   } else {
-    const loginUsers = users.value.filter(u => u.licenseType === 'login').length
-    if (loginUsers >= maxLoginUsers()) return alert('Login-based limit reached')
+    const loginUsers = users.value.filter(u => u.licenseType === 'login-based').length
+    if (loginUsers >= getMaxLoginUsers()) {
+      alert('Límite de usuarios Login-Based alcanzado')
+      return false
+    }
   }
 
   return true
@@ -73,16 +137,18 @@ function isValidUser() {
 function createUser() {
   if (!isValidUser()) return
 
-  users.value.push({
+  const newUser = {
     username: username.value,
     password: password.value,
-    licenseType: licenseType.value,
+    licenseType: licenseType.value === 'seat' ? 'seat-based' : 'login-based',
     cpf: cpf.value || null,
     email: email.value || null,
-  })
+  }
 
+  users.value.push(newUser)
   localStorage.setItem('users', JSON.stringify(users.value))
 
+  // Limpiar campos
   username.value = ''
   password.value = ''
   cpf.value = ''
@@ -91,6 +157,7 @@ function createUser() {
 }
 </script>
 
+
 <style scoped>
 .user-management {
   background: #44445f;
@@ -98,30 +165,93 @@ function createUser() {
   border-radius: 10px;
   max-width: 600px;
 }
+
 form {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
+
 input,
 select {
   padding: 8px;
   border-radius: 5px;
 }
+
 button {
-  background: yellow;
+  background: rgb(18, 182, 54);
+  ;
   padding: 10px;
   font-weight: bold;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
+
 .user-list {
   margin-top: 20px;
 }
+
 @media (max-width: 768px) {
   .user-management {
     max-width: 100%;
   }
 }
+
+/* para el modal */
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.delete-icon {
+  color: red;
+  cursor: pointer;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: white;
+  color: black;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 15px;
+}
+
+.modal-actions button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-actions button:first-child {
+  background-color: red;
+  color: white;
+}
+
+.modal-actions button:last-child {
+  background-color: #ccc;
+}
+
 </style>

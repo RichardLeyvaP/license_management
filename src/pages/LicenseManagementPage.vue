@@ -73,7 +73,7 @@ input {
 }
 button {
   padding: 10px;
-  background: yellow;
+  background: rgb(18, 182, 54);
   border: none;
   border-radius: 5px;
   cursor: pointer;

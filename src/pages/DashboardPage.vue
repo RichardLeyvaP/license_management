@@ -22,9 +22,16 @@
     <div class="main">
       <!-- AppBar -->
       <header class="appbar">
-        <i class="icon">🔔</i>
-        <img src="https://via.placeholder.com/30" alt="avatar" class="avatar" />
-      </header>
+  <div class="left-section">
+    <i class="icon">🔔</i>
+  </div>
+  <div class="right-section">
+    <img src="https://es.vidnoz.com/img/ai-talking-avatar/tips-default.png" alt="avatar" class="avatar" />
+    <button @click="logout" class="logout-btn" title="Salir">⏻</button>
+
+  </div>
+</header>
+
 
       <!-- Content Area -->
       <div class="content">
@@ -58,9 +65,16 @@
 import { ref } from 'vue'
 import LicenseManagementPage from '@/pages/LicenseManagementPage.vue'
 import UserManagementPage from '@/pages/UserManagementPage.vue'
+import { useAuthStore } from '../store/auth'
+
+const auth = useAuthStore()
 
 const isCollapsed = ref(false)
 const selectedView = ref(null)
+
+const logout = () => {
+  auth.logout()
+}
 </script>
 
 <style scoped>
