@@ -24,20 +24,11 @@
   </v-list>
 </v-navigation-drawer>
 
-<!-- Modal -->
-<v-dialog v-model="dialog" max-width="400">
-  <v-card>
-    <v-card-title class="text-h6">{{ modalContent }}</v-card-title>
-    <v-card-text>
-      Aquí va una pequeña descripción o detalle que quieras mostrar en el modal.
-    </v-card-text>
-    <v-card-actions>
-      <v-spacer />
-      <v-btn color="primary" text @click="dialog = false">Cerrar</v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
-
+<!-- Componente del diálogo -->
+<UserCreateDialog
+      v-model="dialog"
+      @create-user="handleCreateUser"
+    />
 
     <!-- Barra superior -->
     <v-app-bar color="info" density="comfortable" app>
@@ -123,6 +114,7 @@ import { ref } from 'vue'
 import LicenseManagementPage from '@/pages/LicenseManagementPage.vue'
 import UserManagementPage from '@/pages/UserManagementPage.vue'
 import { useAuthStore } from '../store/auth'
+import UserCreateDialog from '@/pages/usser/usser.page.vue'
 
 const drawer = ref(false)
 const dialog = ref(false)
