@@ -70,32 +70,52 @@
     <!-- Contenido principal -->
     <v-container>
     <v-main>
-      <v-container fluid class="pa-4">
+      
+        
         <v-row>
-          <v-col cols="12" md="6" class="mx-auto">
+          <v-col cols="12" md="4" class="mx-auto">
             <v-card
               class="mb-4"
               density="compact"
-              prepend-avatar="https://randomuser.me/api/portraits/women/10.jpg"
-              subtitle="Salsa, merengue, y cumbia"
+              prepend-icon="mdi-chart-pie"
               title="Estatísticas"
               variant="text"
               border
             >
 
-              <v-card-text>
-                aqui el grafico
-              </v-card-text>
+         <v-row>
+      <v-col cols="12" md="12">
+        <LicenseChart :license-data="licenseStats" />
+      </v-col>
+    </v-row> 
+     <!-- O gráfico combinado -->
+    
 
             </v-card>
           </v-col>
 
-          <v-col cols="12" md="6" class="mx-auto">
+          <v-col cols="12" md="4" class="mx-auto">
+            <v-card
+              class="mb-4"
+              density="compact"
+               prepend-icon="mdi-chart-bar"
+              title="Estatísticas"
+              variant="text"
+              border
+            >
+           <CombinedLicenseStats
+            :users="userList"
+            :license-config="licenseConfig"
+          />
+           </v-card>
+                </v-col>
+
+          <v-col cols="12" md="4" class="mx-auto">
+         
             <v-card
               class="mb-4"
               density="comfortable"
               prepend-avatar="https://randomuser.me/api/portraits/women/17.jpg"
-              subtitle="Salsa, merengue, y cumbia"
               title="Usuários"
               variant="text"
               border
@@ -129,8 +149,8 @@
              
             </v-card>
           </v-col>
+          
         </v-row>
-      </v-container>
     </v-main>
     </v-container>
   </v-layout>
@@ -148,16 +168,20 @@
 import { useAuthStore } from '../store/auth'
 import UserCreateDialog from '@/pages/UserManagementPage.vue'
 import LicenseManagementDialog  from '@/pages/LicenseManagementPage.vue'
+import LicenseChart from '@/pages/StatisticsLicense.vue'
+import CombinedLicenseStats from '@/pages/StatisticsLicenseUser.vue'
+const userList = ref([])
+const licenseConfig = ref({ seatBased: 0, loginBased: 0 })
 import { ref, onMounted } from 'vue'
 
 const drawer = ref(false)
-const dialog = ref(false)
-const modalContent = ref('')
-const showLicenseManagement = ref(false)
 
 
 const auth = useAuthStore()
-
+const licenseStats = ref({
+  seatBased: 0,
+  loginBased: 0
+})
 
 const users = ref([])
 const showModal = ref(false)
@@ -166,12 +190,10 @@ const userDialog = ref(false)
 const licenseDialog = ref(false)
 
 function openUserManagement() {
-  modalContent.value = 'Gerenciamento de usuários'
   userDialog.value = true
   drawer.value = false
 }
 function openLicenseManagement() {
-  modalContent.value = 'Gerenciamento de usuários'
   licenseDialog.value = true
   drawer.value = false
 }
@@ -179,6 +201,19 @@ function openLicenseManagement() {
 onMounted(() => {
   // Cargar usuarios iniciales
   users.value = JSON.parse(localStorage.getItem('users')) || []
+
+  const saved = JSON.parse(localStorage.getItem('license_config')) || {
+    seatBased: 1,
+    loginBased: 0
+  }
+  licenseStats.value = saved
+
+
+  userList.value = JSON.parse(localStorage.getItem('users')) || []
+  licenseConfig.value = JSON.parse(localStorage.getItem('license_config')) || {
+    seatBased: 1,
+    loginBased: 0
+  }
 })
 
 function handleUserCreated(newUser) {
@@ -187,8 +222,12 @@ function handleUserCreated(newUser) {
 }
 
 function handleLicenseSaved(config) {
-  console.log('Configuración guardada:', config)
-  // Aquí puedes actualizar tu estado global si es necesario
+  const saved = JSON.parse(localStorage.getItem('license_config')) || {
+    seatBased: 1,
+    loginBased: 0
+  }
+  licenseStats.value = saved
+ 
 }
 
 function confirmDelete(username) {
@@ -213,14 +252,7 @@ const logout = () => {
 
 
 
-function openModal(content) {
-  modalContent.value = content
-  dialog.value = true
-  drawer.value = false 
-}
-
 </script>
-
 <style scoped>
 .dashboard {
   display: flex;
