@@ -85,7 +85,6 @@
               class="mt-4"
               size="large"
               variant="tonal"
-              :loading="loading"
               :disabled="!valid"
               @click="login"
             >
@@ -111,8 +110,7 @@ import { ref } from 'vue'
 import { useAuthStore } from '../store/auth'
 export default {
   data: () => ({
-    visible: false,
-    loading: false,
+    visible: false,    
     valid: true,
     snackbar: false,
     sb_type: '',
@@ -191,26 +189,19 @@ export default {
     },
 
     async login() {
-      this.loading = true;
+      
       try {
-        this.data = {
-          email: this.editedItem.email,
-          password: this.editedItem.password,
-          branch_id: this.editedItem.branch_id
-        };
 
 
        var result =  await this.auth.login({
       username: this.editedItem.email,
       password: this.editedItem.password,
-      date: this.accessDate
+      date: this.editedItem.fecha
     })
-    alert(result.data.message);
         
       } catch (error) {
         this.showAlert('warning', error.message || 'Error inesperado', 2000);
       } finally {
-        this.loading = false;
       }
     
     }

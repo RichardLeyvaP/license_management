@@ -88,10 +88,48 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+   // Método para eliminar usuario
+   const deleteUser = (usernameToDelete) => {
+    try {
+      // Obtener usuarios actuales
+      const currentUsers = getUsers()
+      
+      // Verificar si el usuario que intenta eliminar es el mismo que está logueado
+      if (user.value && user.value.username === usernameToDelete) {
+        throw new Error('No puedes eliminarte a ti mismo mientras estás logueado')
+      }
+      
+      // Filtrar el usuario a eliminar
+      const updatedUsers = currentUsers.filter(u => u.username !== usernameToDelete)
+      
+      // Actualizar localStorage
+      localStorage.setItem('users', JSON.stringify(updatedUsers))
+      
+      // Si el usuario eliminado estaba logueado, forzar logout
+      const deletedUserWasLoggedIn = user.value && user.value.username === usernameToDelete
+      if (deletedUserWasLoggedIn) {
+        logout()
+      }
+      
+      return true // Indicar que la eliminación fue exitosa
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error)
+      throw error // Re-lanzar el error para manejo en el componente
+    }
+  }
+
+  // Método para obtener usuarios activos (puede incluir filtros)
+  const getActiveUsers = (includeDeleted = false) => {
+    const users = getUsers()
+    return includeDeleted ? users : users.filter(u => !u.deleted)
+  }
+
   return {
     user,
     login,
     logout,
-    loadUserFromStorage
+    loadUserFromStorage,
+    deleteUser, 
+    getActiveUsers 
   }
 })

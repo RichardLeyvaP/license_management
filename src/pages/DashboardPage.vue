@@ -61,6 +61,11 @@
 
       <v-spacer />
 
+      <v-btn color="#ffffff"   class="mr-2">
+        <v-icon left>mdi-account-circle</v-icon>
+        {{ auth.user.username }}        
+      </v-btn>
+
       <v-btn color="error" @click="logout" class="mr-4">
         <v-icon left>mdi-logout</v-icon>
         Cerrar sesión
@@ -115,7 +120,7 @@
             <v-card
               class="mb-4"
               density="comfortable"
-              prepend-avatar="https://randomuser.me/api/portraits/women/17.jpg"
+              prepend-icon="mdi-account-group"
               title="Usuários"
               variant="text"
               border
@@ -134,14 +139,19 @@
       </thead>
       <tbody>
         <tr v-for="user in users" :key="user.username">
-          <td>{{ user.username }}</td>
-          <td>{{ user.licenseType }}</td>
-          <td>
-            <v-btn icon @click="confirmDelete(user.username)">
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-          </td>
-        </tr>
+  <td>{{ user.username }}</td>
+  <td>{{ user.licenseType }}</td>
+  <td>
+    <v-btn
+      v-if="user.username !== 'admin'"
+      icon
+      @click="confirmDelete(user.username)"
+    >
+      <v-icon color="red">mdi-delete</v-icon>
+    </v-btn>
+  </td>
+</tr>
+
       </tbody>
     </v-table>
               </v-card-text>
@@ -230,9 +240,21 @@ function handleLicenseSaved(config) {
  
 }
 
-function confirmDelete(username) {
-  userToDelete.value = username
-  showModal.value = true
+async function confirmDelete(username) {
+  try {
+    const success = await auth.deleteUser(username)
+    if (success) {
+      alert('Usuario eliminado con éxito')
+      // Actualizar lista local
+      users.value = auth.getActiveUsers()
+      alert(users.value)
+      // Mostrar notificación de éxito
+    }
+  } catch (error) {
+    alert('Error al eliminar el usuario: ' + error.message)
+    // Mostrar error al usuario
+    console.error(error.message)
+  }
 }
 
 function cancelDelete() {
