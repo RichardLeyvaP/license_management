@@ -10,25 +10,48 @@
 
     <v-divider class="my-2" />
 
-    <v-list-item link @click="openModal('Gerenciamento de usuários')">
-      <v-list-item-title><v-icon>mdi-account-group</v-icon> Usuários</v-list-item-title>
+    <v-list-item link @click="openUserManagement">
+          <v-list-item-title>
+            <v-icon>mdi-account-group</v-icon> Usuários
+          </v-list-item-title>
+        </v-list-item>
 
-</v-list-item>
+    <v-list-item link @click="openLicenseManagement">
+          <v-list-item-title>
+            <v-icon>mdi-certificate</v-icon> Licenças
+          </v-list-item-title>
+        </v-list-item>
 
-
-    <v-list-item link @click="openModal(' Gerenciamento de licenças')">
-      
-      <v-list-item-title><v-icon>mdi-certificate</v-icon> Licenças</v-list-item-title>
-
-    </v-list-item>
   </v-list>
 </v-navigation-drawer>
 
-<!-- Componente del diálogo -->
-<UserCreateDialog
-      v-model="dialog"
-      @create-user="handleCreateUser"
+ 
+ <UserCreateDialog 
+      v-model="userDialog"
+      @user-created="handleUserCreated"
     />
+
+    <LicenseManagementDialog 
+      v-model="licenseDialog"
+      @saved="handleLicenseSaved"
+    />
+
+    
+
+    <!-- Diálogo de confirmación para eliminar -->
+    <v-dialog v-model="showModal" max-width="400px">
+      <v-card>
+        <v-card-title>Confirmar Eliminación</v-card-title>
+        <v-card-text>
+          ¿Estás seguro de eliminar al usuario {{ userToDelete }}?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="grey" @click="cancelDelete">Cancelar</v-btn>
+          <v-btn color="red" @click="deleteUser">Eliminar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Barra superior -->
     <v-app-bar color="info" density="comfortable" app>
@@ -55,20 +78,15 @@
               density="compact"
               prepend-avatar="https://randomuser.me/api/portraits/women/10.jpg"
               subtitle="Salsa, merengue, y cumbia"
-              title="Cuba"
+              title="Estatísticas"
               variant="text"
               border
             >
-              <v-img height="180" src="https://picsum.photos/512/128?image=660" cover />
 
               <v-card-text>
-                During my last trip to South America, I spent 2 weeks traveling through Patagonia in Chile.
+                aqui el grafico
               </v-card-text>
 
-              <template v-slot:actions>
-                <v-btn color="primary" variant="text">View More</v-btn>
-                <v-btn color="primary" variant="text">See in Map</v-btn>
-              </template>
             </v-card>
           </v-col>
 
@@ -78,20 +96,37 @@
               density="comfortable"
               prepend-avatar="https://randomuser.me/api/portraits/women/17.jpg"
               subtitle="Salsa, merengue, y cumbia"
-              title="Florida"
+              title="Usuários"
               variant="text"
               border
             >
-              <v-img height="180" src="https://picsum.photos/512/128?random" cover />
+              
 
               <v-card-text>
-                During my last trip to Florida, I spent 2 weeks traveling through the Everglades.
+                <!-- Lista de usuarios (opcional) -->
+    <v-table v-if="users.length > 0">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Tipo de Licencia</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="user in users" :key="user.username">
+          <td>{{ user.username }}</td>
+          <td>{{ user.licenseType }}</td>
+          <td>
+            <v-btn icon @click="confirmDelete(user.username)">
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+          </td>
+        </tr>
+      </tbody>
+    </v-table>
               </v-card-text>
 
-              <template v-slot:actions>
-                <v-btn color="primary" variant="text">View More</v-btn>
-                <v-btn color="primary" variant="text">See in Map</v-btn>
-              </template>
+             
             </v-card>
           </v-col>
         </v-row>
@@ -110,21 +145,67 @@
 
 
 <script setup>
-import { ref } from 'vue'
-import LicenseManagementPage from '@/pages/LicenseManagementPage.vue'
-import UserManagementPage from '@/pages/UserManagementPage.vue'
 import { useAuthStore } from '../store/auth'
-import UserCreateDialog from '@/pages/usser/usser.page.vue'
+import UserCreateDialog from '@/pages/UserManagementPage.vue'
+import LicenseManagementDialog  from '@/pages/LicenseManagementPage.vue'
+import { ref, onMounted } from 'vue'
 
 const drawer = ref(false)
 const dialog = ref(false)
 const modalContent = ref('')
+const showLicenseManagement = ref(false)
 
 
 const auth = useAuthStore()
 
-const isCollapsed = ref(false)
-const selectedView = ref(null)
+
+const users = ref([])
+const showModal = ref(false)
+const userToDelete = ref(null)
+const userDialog = ref(false)
+const licenseDialog = ref(false)
+
+function openUserManagement() {
+  modalContent.value = 'Gerenciamento de usuários'
+  userDialog.value = true
+  drawer.value = false
+}
+function openLicenseManagement() {
+  modalContent.value = 'Gerenciamento de usuários'
+  licenseDialog.value = true
+  drawer.value = false
+}
+
+onMounted(() => {
+  // Cargar usuarios iniciales
+  users.value = JSON.parse(localStorage.getItem('users')) || []
+})
+
+function handleUserCreated(newUser) {
+  // Actualizar lista local de usuarios
+  users.value = JSON.parse(localStorage.getItem('users')) || []
+}
+
+function handleLicenseSaved(config) {
+  console.log('Configuración guardada:', config)
+  // Aquí puedes actualizar tu estado global si es necesario
+}
+
+function confirmDelete(username) {
+  userToDelete.value = username
+  showModal.value = true
+}
+
+function cancelDelete() {
+  showModal.value = false
+  userToDelete.value = null
+}
+
+function deleteUser() {
+  users.value = users.value.filter(u => u.username !== userToDelete.value)
+  localStorage.setItem('users', JSON.stringify(users.value))
+  cancelDelete()
+}
 
 const logout = () => {
   auth.logout()
