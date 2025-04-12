@@ -1,4 +1,12 @@
 <template>
+   <BaseSnackbar
+  v-model="showSnackbar"
+  :timeout="3000"
+  :type="snackbarType"
+  :icon="snackbarType === 'error' ? 'mdi-alert-circle' : 'mdi-check-circle'"
+  :title="titleSnackbar"
+  :message="messageSnackbar"
+/>
   <v-dialog v-model="dialogModel" max-width="600px" persistent>
     <v-card>
       <v-card-title class="text-h5">Crear Usuario</v-card-title>
@@ -61,6 +69,8 @@
 
 <script setup>
 import { ref, computed,watch  } from 'vue'
+import BaseSnackbar from '@/pages/BaseSnackbar.vue'
+
 
 const props = defineProps({
   modelValue: {
@@ -71,7 +81,11 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'user-created'])
 
-// Modelos reactivos
+const messageSnackbar = ref('')
+const snackbarType = ref('error')
+const titleSnackbar = ref('')
+const showSnackbar = ref(false)
+
 const username = ref('')
 const password = ref('')
 const licenseType = ref('seat')
@@ -136,7 +150,6 @@ watch(
   (newVal) => {
     if (newVal) {
       loadUsers()
-      alert('Cargando usuarios desde localStorage')
     }
   }
 )
@@ -194,42 +207,6 @@ function checkLicenseAvailability() {
   return null
 }
 
-function createUser() {
-  // Validar formulario
-  const formValid = formRef.value.validate()
-  if (!formValid.valid) return
-  
-  // Verificar disponibilidad de licencia
-  const licenseError = checkLicenseAvailability()
-  if (licenseError) {
-    alert(licenseError)
-    return
-  }
-
-  // Verificar si el usuario ya existe
-  if (users.value.some(u => u.username === username.value)) {
-    alert('Este nombre de usuario ya existe')
-    return
-  }
-
-  // Crear nuevo usuario
-  const newUser = {
-    username: username.value,
-    password: password.value,
-    licenseType: licenseType.value === 'seat' ? 'seat-based' : 'login-based',
-    cpf: cpf.value || null,
-    email: email.value || null,
-    createdAt: new Date().toISOString()
-  }
-
-  // Guardar usuario
-  users.value.push(newUser)
-  localStorage.setItem('users', JSON.stringify(users.value))
-  
-  // Emitir evento y limpiar formulario
-  emit('user-created', newUser)
-  closeDialog()
-}
 async function handleSubmit() {
   try {
     // Validación del formulario
@@ -238,14 +215,24 @@ async function handleSubmit() {
 
     // Verificar usuario existente
     if (users.value.some(u => u.username === username.value)) {
-      alert('Este nombre de usuario ya existe')
+
+      messageSnackbar.value = 'Este nombre de usuario ya existe'
+      snackbarType.value = 'warning'
+      titleSnackbar.value = 'Alerta'
+      showSnackbar.value = true
+      
       return
     }
 
     // Verificar licencias
     const licenseError = checkLicenseAvailability()
     if (licenseError) {
-      alert(licenseError)
+     
+      messageSnackbar.value = licenseError
+      snackbarType.value = 'error'
+      titleSnackbar.value = 'Error'
+      showSnackbar.value = true
+
       return
     }
 
@@ -263,15 +250,20 @@ async function handleSubmit() {
     users.value.push(newUser)
     localStorage.setItem('users', JSON.stringify(users.value))
     
-    // Notificar y limpiar
     emit('user-created', newUser)
     closeDialog()
     
-    alert('Usuario creado exitosamente!')
+    messageSnackbar.value = 'Usuario creado exitosamente!'
+    snackbarType.value = 'success'
+      titleSnackbar.value = 'Éxito'
+      showSnackbar.value = true
     
   } catch (error) {
-    console.error('Error al crear usuario:', error)
-    alert('Ocurrió un error al crear el usuario')
+
+    messageSnackbar.value = 'Ocurrió un error al crear el usuario'
+      snackbarType.value = 'error'
+      titleSnackbar.value = 'Error'
+      showSnackbar.value = true
   }
 }
 </script>

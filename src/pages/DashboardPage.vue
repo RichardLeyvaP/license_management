@@ -1,5 +1,13 @@
 
 <template>
+  <BaseSnackbar
+  v-model="showSnackbar"
+  :timeout="3000"
+  :type="snackbarType"
+  :icon="snackbarType === 'error' ? 'mdi-alert-circle' : 'mdi-check-circle'"
+  :title="titleSnackbar"
+  :message="messageSnackbar"
+/>
   <v-layout>
    <!-- Menú lateral -->
 <v-navigation-drawer app v-model="drawer" temporary>
@@ -175,23 +183,29 @@
 
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import BaseSnackbar from '@/pages/BaseSnackbar.vue'
 import { useAuthStore } from '../store/auth'
 import UserCreateDialog from '@/pages/UserManagementPage.vue'
 import LicenseManagementDialog  from '@/pages/LicenseManagementPage.vue'
 import LicenseChart from '@/pages/StatisticsLicense.vue'
 import CombinedLicenseStats from '@/pages/StatisticsLicenseUser.vue'
+
 const userList = ref([])
 const licenseConfig = ref({ seatBased: 0, loginBased: 0 })
-import { ref, onMounted } from 'vue'
+
+const showSnackbar = ref(false)
 
 const drawer = ref(false)
-
 
 const auth = useAuthStore()
 const licenseStats = ref({
   seatBased: 0,
   loginBased: 0
 })
+const messageSnackbar = ref('')
+const snackbarType = ref('error')
+const titleSnackbar = ref('')
 
 const users = ref([])
 const showModal = ref(false)
@@ -244,14 +258,19 @@ async function confirmDelete(username) {
   try {
     const success = await auth.deleteUser(username)
     if (success) {
-      alert('Usuario eliminado con éxito')
+
+       messageSnackbar.value = 'Usuario eliminado con éxito'
+      snackbarType.value = 'success'
+      titleSnackbar.value = 'Éxito'
+      showSnackbar.value = true
       // Actualizar lista local
       users.value = auth.getActiveUsers()
-      alert(users.value)
-      // Mostrar notificación de éxito
     }
   } catch (error) {
-    alert('Error al eliminar el usuario: ' + error.message)
+    messageSnackbar.value = 'Error al eliminar el usuario: ' + error.message
+      snackbarType.value = 'error'
+      titleSnackbar.value = 'Error'
+      showSnackbar.value = true
     // Mostrar error al usuario
     console.error(error.message)
   }
