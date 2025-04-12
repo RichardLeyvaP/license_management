@@ -69,7 +69,7 @@
 
 <script setup>
 import { ref, computed,watch  } from 'vue'
-import BaseSnackbar from '@/pages/BaseSnackbar.vue'
+import BaseSnackbar from '@/components/BaseSnackbar.vue'
 
 
 const props = defineProps({

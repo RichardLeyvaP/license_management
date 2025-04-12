@@ -184,7 +184,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import BaseSnackbar from '@/pages/BaseSnackbar.vue'
+import BaseSnackbar from '@/components/BaseSnackbar.vue'
 import { useAuthStore } from '../store/auth'
 import UserCreateDialog from '@/pages/UserManagementPage.vue'
 import LicenseManagementDialog  from '@/pages/LicenseManagementPage.vue'
