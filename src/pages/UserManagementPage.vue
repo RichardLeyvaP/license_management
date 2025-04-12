@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed,watch  } from 'vue'
 
 const props = defineProps({
   modelValue: {
@@ -131,9 +131,15 @@ const dialogModel = computed({
 })
 
 // Cargar usuarios al montar
-onMounted(() => {
-  loadUsers()
-})
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    if (newVal) {
+      loadUsers()
+      alert('Cargando usuarios desde localStorage')
+    }
+  }
+)
 
 function loadUsers() {
   users.value = JSON.parse(localStorage.getItem('users')) || []

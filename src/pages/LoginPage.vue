@@ -200,6 +200,7 @@ export default {
     })
         
       } catch (error) {
+        alert
         this.showAlert('warning', error.message || 'Error inesperado', 2000);
       } finally {
       }

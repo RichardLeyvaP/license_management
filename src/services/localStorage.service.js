@@ -4,7 +4,7 @@ export function initLocalStorage() {
     // Inicializar usuarios si no existen
     if (!localStorage.getItem('users')) {
       localStorage.setItem('users', JSON.stringify([
-        { username: 'admin', password: '123456', licenseType: 'seat-based' },
+        { username: 'admin', password: 'Admin123', licenseType: 'seat-based' },
       ]))
     }
   
