@@ -1,6 +1,6 @@
 <template>
   <v-card class="user-license-stats">
-    <v-card-title class="text-h6">Usuarios por Tipo de Licencia</v-card-title>
+    <v-card-title class="text-h6">Usuários por tipo de licença</v-card-title>
     <v-card-text>
       <div class="chart-container">
         <canvas ref="chartCanvas"></canvas>
@@ -18,7 +18,6 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js'
 
-// Registra los componentes de Chart.js
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend)
 
 const props = defineProps({
@@ -38,16 +37,16 @@ const props = defineProps({
 const chartCanvas = ref(null)
 let chartInstance = null
 
-// Calcula estadísticas
+
 const stats = computed(() => {
   const seatUsers = props.users.filter(u => u.licenseType === 'seat-based').length
   const loginUsers = props.users.filter(u => u.licenseType === 'login-based').length
   
   return [
-    { label: 'Usuarios Seat', value: seatUsers, color: '#4CAF50' },
-    { label: 'Límite Seat', value: props.licenseConfig.seatBased, color: '#2E7D32' },
-    { label: 'Usuarios Login', value: loginUsers, color: '#2196F3' },
-    { label: 'Límite Login', value: props.licenseConfig.loginBased * 3, color: '#1565C0' }
+    { label: 'Usuários Seat', value: seatUsers, color: '#4CAF50' },
+    { label: 'Limite Seat', value: props.licenseConfig.seatBased, color: '#2E7D32' },
+    { label: 'Usuários Login', value: loginUsers, color: '#2196F3' },
+    { label: 'Limite Login', value: props.licenseConfig.loginBased * 3, color: '#1565C0' }
   ]
 })
 
@@ -55,7 +54,7 @@ const chartData = computed(() => ({
   labels: ['Seat-Based', 'Login-Based'],
   datasets: [
     {
-      label: 'Usuarios Activos',
+      label: 'Usuários Activos',
       data: [
         props.users.filter(u => u.licenseType === 'seat-based').length,
         props.users.filter(u => u.licenseType === 'login-based').length
@@ -63,7 +62,7 @@ const chartData = computed(() => ({
       backgroundColor: ['#4CAF50', '#2196F3']
     },
     {
-      label: 'Límite de Licencias',
+      label: 'Limite de licença',
       data: [
         props.licenseConfig.seatBased,
         props.licenseConfig.loginBased * 3
@@ -91,13 +90,13 @@ const initChart = () => {
           beginAtZero: true,
           title: {
             display: true,
-            text: 'Cantidad'
+            text: 'Quantia'
           }
         },
         x: {
           title: {
             display: true,
-            text: 'Tipo de Licencia'
+            text: 'Tipo de licença'
           }
         }
       },
@@ -136,7 +135,7 @@ watch([() => props.users, () => props.licenseConfig], () => {
 
 .chart-container {
   position: relative;
-  height: 300px;
+  height: 170px;
   margin-bottom: 20px;
 }
 

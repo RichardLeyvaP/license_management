@@ -15,7 +15,7 @@
           <!-- Campo Nombre de Usuario -->
           <v-text-field
             v-model="username"
-            label="Nombre de Usuario"
+            label="Nome de usuário"
             placeholder="Máx. 10 caracteres alfanuméricos"
             :rules="usernameRules"
             required
@@ -25,17 +25,17 @@
           <!-- Campo Contraseña -->
           <v-text-field
             v-model="password"
-            label="Contraseña"
+            label="Senha"
             type="password"
             :rules="passwordRules"
             required
           />
 
-          <!-- Selector de Tipo de Licencia -->
+          
           <v-select
             v-model="licenseType"
             :items="licenseTypes"
-            label="Tipo de Licencia"
+            label="Tipo de licença"
             :rules="[rules.required]"
             required
           />
@@ -45,13 +45,13 @@
             v-model="cpf"
             label="CPF (opcional)"
             :rules="cpfRules"
-            placeholder="11 dígitos sin puntos ni guiones"
+            placeholder="11 dígitos sem pontos ou hífens"
           />
 
           <!-- Campo Email -->
           <v-text-field
             v-model="email"
-            label="Email (opcional)"
+            label="E-mail (opcional)"
             :rules="emailRules"
             type="email"
           />
@@ -102,20 +102,21 @@ const licenseTypes = [
 
 // Reglas de validación
 const rules = {
-  required: value => !!value || 'Campo requerido',
-  usernameFormat: value => /^[a-zA-Z0-9]{1,10}$/.test(value) || 'Solo caracteres alfanuméricos (máx. 10)',
-  passwordLength: value => value.length >= 3 || 'Mínimo 3 caracteres',
-  passwordUpper: value => /[A-Z]/.test(value) || 'Debe contener al menos 1 mayúscula',
-  passwordDigit: value => /\d/.test(value) || 'Debe contener al menos 1 número',
-  passwordSpace: value => !/\s/.test(value) || 'No puede contener espacios',
-  emailFormat: value => !value || /.+@.+\..+/.test(value) || 'Email debe ser válido',
-  cpfFormat: value => !value || /^\d{0,11}$/.test(value) || 'Solo números (máx. 11 dígitos)'
+  required: value => !!value || 'Campo obrigatório',
+  usernameFormat: value => /^[a-zA-Z0-9]{1,10}$/.test(value) || 'Apenas caracteres alfanuméricos (máx. 10)',
+  passwordLength: value => value.length >= 3 || 'Mínimo de 3 caracteres',
+  passwordUpper: value => /[A-Z]/.test(value) || 'Deve conter pelo menos 1 letra maiúscula',
+  passwordDigit: value => /\d/.test(value) || 'Deve conter pelo menos 1 número',
+  passwordSpace: value => !/\s/.test(value) || 'Não pode conter espaços',
+  emailFormat: value => !value || /.+@.+\..+/.test(value) || 'Email deve ser válido',
+  cpfFormat: value => !value || /^\d{0,11}$/.test(value) || 'Apenas números (máx. 11 dígitos)'
 }
+
 
 const usernameRules = [
   rules.required,
   rules.usernameFormat,
-  () => !usernameExists.value || 'Este usuario ya existe'
+  () => !usernameExists.value || 'Este usuário já existe'
 ]
 
 const passwordRules = [
@@ -196,12 +197,12 @@ function checkLicenseAvailability() {
   if (licenseType.value === 'seat') {
     const used = users.value.filter(u => u.licenseType === 'seat-based').length
     if (used >= config.seatBased) {
-      return 'No hay más licencias Seat-Based disponibles'
+      return 'Não há mais licenças Seat-Based disponíveis'
     }
   } else {
     const loginUsers = users.value.filter(u => u.licenseType === 'login-based').length
     if (loginUsers >= getMaxLoginUsers()) {
-      return 'Límite de usuarios Login-Based alcanzado'
+      return 'Limite de usuários Login-Based atingido '
     }
   }
   return null
@@ -216,7 +217,7 @@ async function handleSubmit() {
     // Verificar usuario existente
     if (users.value.some(u => u.username === username.value)) {
 
-      messageSnackbar.value = 'Este nombre de usuario ya existe'
+      messageSnackbar.value = 'Este nome de usuário já existe'
       snackbarType.value = 'warning'
       titleSnackbar.value = 'Alerta'
       showSnackbar.value = true
@@ -253,16 +254,16 @@ async function handleSubmit() {
     emit('user-created', newUser)
     closeDialog()
     
-    messageSnackbar.value = 'Usuario creado exitosamente!'
+    messageSnackbar.value = 'Usuário criado com sucesso!'
     snackbarType.value = 'success'
-      titleSnackbar.value = 'Éxito'
+      titleSnackbar.value = 'Sucesso'
       showSnackbar.value = true
     
   } catch (error) {
 
-    messageSnackbar.value = 'Ocurrió un error al crear el usuario'
+    messageSnackbar.value = 'Ocorreu um erro ao criar o usuário'
       snackbarType.value = 'error'
-      titleSnackbar.value = 'Error'
+      titleSnackbar.value = 'Erro'
       showSnackbar.value = true
   }
 }

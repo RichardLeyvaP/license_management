@@ -1,11 +1,20 @@
 <template>
-  
+     <BaseSnackbar
+  v-model="showSnackbar"
+  :timeout="3000"
+  :type="snackbarType"
+  :icon="snackbarType === 'error' ? 'mdi-alert-circle' : 'mdi-check-circle'"
+  :title="titleSnackbar"
+  :message="messageSnackbar"
+/>
+
+
   <v-dialog v-model="dialogModel" max-width="600px" persistent>
     <v-card>
-      <v-card-title class="text-h5">Gestión de Licencias</v-card-title>
+      <v-card-title class="text-h5">Gerenciamento de licenças</v-card-title>
       <v-card-text>
         <v-form @submit.prevent="saveLicenses" ref="licenseForm">
-          <!-- Licencias Seat-Based -->
+          
           <v-text-field
             v-model.number="seatLicenses"
             label="Licencias Seat-Based"
@@ -16,7 +25,7 @@
             class="mb-4"
           />
           
-          <!-- Licencias Login-Based -->
+          
           <v-text-field
             v-model.number="loginLicenses"
             label="Licencias Login-Based"
@@ -47,9 +56,9 @@
         <v-divider class="my-4"></v-divider>
         
         <div class="summary">
-          <h3 class="text-h6 mb-2">Configuración Actual:</h3>
-          <p><strong>Licencias Seat-Based:</strong> {{ currentConfig.seatBased }}</p>
-          <p><strong>Licencias Login-Based:</strong> {{ currentConfig.loginBased }}</p>
+          <h3 class="text-h6 mb-2">Configuração atual:</h3>
+          <p><strong>Licenças Seat-Based:</strong> {{ currentConfig.seatBased }}</p>
+          <p><strong>Licenças Login-Based:</strong> {{ currentConfig.loginBased }}</p>
         </div>
       </v-card-text>
     </v-card>
@@ -57,7 +66,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'  // Asegúrate de importar watch
+import { ref, computed, onMounted, watch } from 'vue' 
+import BaseSnackbar from '@/components/BaseSnackbar.vue'
+
 
 const props = defineProps({
   modelValue: {
@@ -68,13 +79,18 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'saved'])
 
-// Modelos reactivos
+const showSnackbar = ref(false)
+const messageSnackbar = ref('')
+const titleSnackbar = ref('')
+const snackbarType = ref('success')
+
+
 const seatLicenses = ref(1)
 const loginLicenses = ref(0)
 const loading = ref(false)
 const licenseForm = ref(null)
 
-// Computed para v-model
+
 const dialogModel = computed({
   get() {
     return props.modelValue
@@ -84,7 +100,7 @@ const dialogModel = computed({
   }
 })
 
-// Configuración actual
+
 const currentConfig = computed(() => {
   const saved = JSON.parse(localStorage.getItem('license_config')) || {
     seatBased: 1,
@@ -93,19 +109,18 @@ const currentConfig = computed(() => {
   return saved
 })
 
-// Reglas de validación
+
 const seatLicenseRules = [
-  v => !!v || 'Este campo es requerido',
-  v => v >= 1 || 'Debe haber al menos 1 licencia (para el administrador)',
-  v => Number.isInteger(v) || 'Debe ser un número entero'
+  v => !!v || 'Este campo é obrigatório',
+  v => v >= 1 || 'Deve haver pelo menos 1 licença (para o administrador)',
+  v => Number.isInteger(v) || 'Deve ser um inteiro'
 ]
 
 const loginLicenseRules = [
-  v => v >= 0 || 'No puede ser negativo',
-  v => Number.isInteger(v) || 'Debe ser un número entero'
+  v => v >= 0 || 'Não pode ser negativo',
+  v => Number.isInteger(v) || 'Deve ser um inteiro'
 ]
 
-// Cargar configuración al abrir el diálogo
 watch(dialogModel, (newVal) => {
   if (newVal) {
     const saved = JSON.parse(localStorage.getItem('license_config'))
@@ -125,6 +140,69 @@ async function saveLicenses() {
   if (!valid) return
 
   loading.value = true
+
+  try {
+
+    const totalSeatUsers = getUsersCountByLicenseType('seat-based') // función ficticia que debes implementar
+    const totalLoginUsers = getUsersCountByLicenseType('login-based') // función ficticia que debes implementar
+
+    const requiredLoginLicenses = Math.ceil(totalLoginUsers / 3)
+
+    if (seatLicenses.value < totalSeatUsers) {
+
+      messageSnackbar.value = `Não é possível salvar. Existem ${totalSeatUsers} usuários usando a licença Seat-Based, e você está tentando definir ${seatLicenses.value} licenças.`
+      snackbarType.value = 'error'
+      titleSnackbar.value = 'Erro'
+      showSnackbar.value = true
+       loading.value = false
+
+      return
+    }
+
+    if (loginLicenses.value < requiredLoginLicenses) {
+      messageSnackbar.value = `Não é possível salvar. Existem ${totalLoginUsers} usuários usando a licença Login-Based. Para essa quantidade, são necessárias pelo menos ${requiredLoginLicenses} licenças.`
+      snackbarType.value = 'error'
+      titleSnackbar.value = 'Erro'
+      showSnackbar.value = true
+       loading.value = false
+      return
+    }
+
+    const config = {
+      seatBased: seatLicenses.value,
+      loginBased: loginLicenses.value,
+    }
+
+    localStorage.setItem('license_config', JSON.stringify(config))
+    emit('saved', config)
+    messageSnackbar.value = 'Licenças salvas com sucesso'
+      snackbarType.value = 'success'
+      titleSnackbar.value = 'Sucesso'
+      showSnackbar.value = true
+       loading.value = false
+    closeDialog()
+
+  } catch (error) {
+    console.error('Erro ao salvar licenças:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+function getUsersCountByLicenseType(type) {
+  // Simula que obtienes usuarios según el tipo
+  const users = JSON.parse(localStorage.getItem('users') || '[]')
+  return users.filter(user => user.licenseType === type).length
+}
+
+
+
+/*
+async function saveLicenses() {
+  const { valid } = await licenseForm.value.validate()
+  if (!valid) return
+
+  loading.value = true
   
   try {
     const config = {
@@ -135,7 +213,7 @@ async function saveLicenses() {
     localStorage.setItem('license_config', JSON.stringify(config))
     emit('saved', config)
     
-    // Cerrar el diálogo después de guardar
+   
     closeDialog()
     
   } catch (error) {
@@ -143,7 +221,7 @@ async function saveLicenses() {
   } finally {
     loading.value = false
   }
-}
+}*/
 </script>
 
 <style scoped>

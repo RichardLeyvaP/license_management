@@ -8,7 +8,6 @@ export function initLocalStorage() {
       ]))
     }
   
-    // Inicializar configuración de licencias si no existe
     if (!localStorage.getItem('license_config')) {
       localStorage.setItem('license_config', JSON.stringify({
         seatBased: 1,

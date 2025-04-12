@@ -9,7 +9,7 @@
   :message="messageSnackbar"
 />
   <v-layout>
-   <!-- Menú lateral -->
+
 <v-navigation-drawer app v-model="drawer" temporary>
   <v-list dense>
     <v-list-item>
@@ -46,12 +46,11 @@
 
     
 
-    <!-- Diálogo de confirmación para eliminar -->
     <v-dialog v-model="showModal" max-width="400px">
       <v-card>
-        <v-card-title>Confirmar Eliminación</v-card-title>
+        <v-card-title>Confirmar exclusão</v-card-title>
         <v-card-text>
-          ¿Estás seguro de eliminar al usuario {{ userToDelete }}?
+          ¿Tem certeza de que deseja excluir o usuário {{ userToDelete }}?
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -61,7 +60,7 @@
       </v-card>
     </v-dialog>
 
-    <!-- Barra superior -->
+   
     <v-app-bar color="info" density="comfortable" app>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
 
@@ -80,7 +79,7 @@
       </v-btn>
     </v-app-bar>
 
-    <!-- Contenido principal -->
+   
     <v-container>
     <v-main>
       
@@ -101,7 +100,7 @@
         <LicenseChart :license-data="licenseStats" />
       </v-col>
     </v-row> 
-     <!-- O gráfico combinado -->
+     
     
 
             </v-card>
@@ -136,13 +135,13 @@
               
 
               <v-card-text>
-                <!-- Lista de usuarios (opcional) -->
+            
     <v-table v-if="users.length > 0">
       <thead>
         <tr>
-          <th>Usuario</th>
-          <th>Tipo de Licencia</th>
-          <th>Acciones</th>
+          <th>Usuário</th>
+          <th>Tipo de licença</th>
+          <th>Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -179,9 +178,6 @@
 
 
 
-
-
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import BaseSnackbar from '@/components/BaseSnackbar.vue'
@@ -195,7 +191,6 @@ const userList = ref([])
 const licenseConfig = ref({ seatBased: 0, loginBased: 0 })
 
 const showSnackbar = ref(false)
-
 const drawer = ref(false)
 
 const auth = useAuthStore()
@@ -223,7 +218,6 @@ function openLicenseManagement() {
 }
 
 onMounted(() => {
-  // Cargar usuarios iniciales
   users.value = JSON.parse(localStorage.getItem('users')) || []
 
   const saved = JSON.parse(localStorage.getItem('license_config')) || {
@@ -231,7 +225,6 @@ onMounted(() => {
     loginBased: 0
   }
   licenseStats.value = saved
-
 
   userList.value = JSON.parse(localStorage.getItem('users')) || []
   licenseConfig.value = JSON.parse(localStorage.getItem('license_config')) || {
@@ -241,7 +234,6 @@ onMounted(() => {
 })
 
 function handleUserCreated(newUser) {
-  // Actualizar lista local de usuarios
   users.value = JSON.parse(localStorage.getItem('users')) || []
 }
 
@@ -251,29 +243,11 @@ function handleLicenseSaved(config) {
     loginBased: 0
   }
   licenseStats.value = saved
- 
 }
 
-async function confirmDelete(username) {
-  try {
-    const success = await auth.deleteUser(username)
-    if (success) {
-
-       messageSnackbar.value = 'Usuario eliminado con éxito'
-      snackbarType.value = 'success'
-      titleSnackbar.value = 'Éxito'
-      showSnackbar.value = true
-      // Actualizar lista local
-      users.value = auth.getActiveUsers()
-    }
-  } catch (error) {
-    messageSnackbar.value = 'Error al eliminar el usuario: ' + error.message
-      snackbarType.value = 'error'
-      titleSnackbar.value = 'Error'
-      showSnackbar.value = true
-    // Mostrar error al usuario
-    console.error(error.message)
-  }
+function confirmDelete(username) {
+  userToDelete.value = username
+  showModal.value = true
 }
 
 function cancelDelete() {
@@ -281,19 +255,36 @@ function cancelDelete() {
   userToDelete.value = null
 }
 
-function deleteUser() {
-  users.value = users.value.filter(u => u.username !== userToDelete.value)
-  localStorage.setItem('users', JSON.stringify(users.value))
-  cancelDelete()
+async function deleteUser() {
+  try {
+    const success = await auth.deleteUser(userToDelete.value)
+    if (success) {
+      messageSnackbar.value = 'Usuário excluído com sucesso'
+      snackbarType.value = 'success'
+      titleSnackbar.value = 'Sucesso'
+      showSnackbar.value = true
+
+      users.value = auth.getActiveUsers()
+    }
+  } catch (error) {
+    messageSnackbar.value = 'Erro ao excluir usuário:' + error.message
+    snackbarType.value = 'error'
+    titleSnackbar.value = 'Erro'
+    showSnackbar.value = true
+    console.error(error.message)
+  } finally {
+    cancelDelete()
+  }
 }
 
 const logout = () => {
   auth.logout()
 }
-
-
-
 </script>
+
+
+
+
 <style scoped>
 .dashboard {
   display: flex;
@@ -304,7 +295,7 @@ const logout = () => {
   overflow: hidden;
 }
 
-/* Sidebar */
+
 .sidebar {
   background: #2c2c3e;
   width: 200px;
@@ -341,14 +332,14 @@ const logout = () => {
   margin-right: 10px;
 }
 
-/* Main */
+
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-/* AppBar */
+
 .appbar {
   height: 50px;
   background: #33334f;
@@ -365,7 +356,7 @@ const logout = () => {
   margin-left: 20px;
 }
 
-/* Content */
+
 .content {
   display: flex;
   flex: 1;
@@ -374,7 +365,7 @@ const logout = () => {
   flex-wrap: wrap;
 }
 
-/* Cards */
+
 .cards {
   display: grid;
   grid-template-columns: repeat(2, 80px);
@@ -390,7 +381,7 @@ const logout = () => {
   align-items: center;
 }
 
-/* Dynamic Content */
+
 .dynamic-content {
   background: #555578;
   flex-grow: 1;
@@ -399,7 +390,7 @@ const logout = () => {
   min-width: 200px;
 }
 
-/* 🔥 Responsiveness */
+
 @media (max-width: 768px) {
   .dashboard {
     flex-direction: column;

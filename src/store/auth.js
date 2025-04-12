@@ -18,7 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     if (!canUserLogin(username, foundUser.licenseType, date)) {
-      throw new Error('Limite diário de acesso atingido para licenças Login-Based')
+      throw new Error('Limite de acesso diário definido para licenças baseadas em login')
     }
 
     if (foundUser.licenseType === 'login-based') {
@@ -94,7 +94,7 @@ export const useAuthStore = defineStore('auth', () => {
       const currentUsers = getUsers()
       
       if (user.value && user.value.username === usernameToDelete) {
-        throw new Error('No puedes eliminarte a ti mismo mientras estás logueado')
+        throw new Error('Você não pode se excluir enquanto estiver logado.')
       }
       
       const updatedUsers = currentUsers.filter(u => u.username !== usernameToDelete)
@@ -105,10 +105,9 @@ export const useAuthStore = defineStore('auth', () => {
       if (deletedUserWasLoggedIn) {
         logout()
       }
-      
       return true 
     } catch (error) {
-      console.error('Error al eliminar usuario:', error)
+      console.error('Erro ao excluir usuário:', error)
       throw error 
     }
   }
@@ -117,6 +116,7 @@ export const useAuthStore = defineStore('auth', () => {
     const users = getUsers()
     return includeDeleted ? users : users.filter(u => !u.deleted)
   }
+  
 
   return {
     user,

@@ -1,6 +1,6 @@
 <template>
     <v-card class="license-chart-card">
-      <v-card-title class="text-h6">Distribución de Licencias</v-card-title>
+      <v-card-title class="text-h6">Distribuição de Licenças</v-card-title>
       <v-card-text>
         <div class="chart-container">
           <canvas ref="chartCanvas"></canvas>
@@ -19,7 +19,6 @@
   import { ref, onMounted, watch } from 'vue'
   import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js'
   
-  // Registra los componentes necesarios de Chart.js
   Chart.register(DoughnutController, ArcElement, Tooltip, Legend)
   
   const props = defineProps({
@@ -83,7 +82,6 @@
   }
   
   onMounted(() => {
-    // Esperar a que el DOM esté completamente renderizado
     setTimeout(initChart, 100)
   })
   

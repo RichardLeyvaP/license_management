@@ -178,9 +178,9 @@ export default {
       this.snackbar = true;
 
       const alertConfig = {
-        success: { title: 'Éxito', icon: 'mdi-check-circle' },
-        error: { title: 'Error', icon: 'mdi-alert-circle' },
-        warning: { title: 'Advertencia', icon: 'mdi-alert' }
+        success: { title: 'Sucesso', icon: 'mdi-check-circle' },
+        error: { title: 'Erro', icon: 'mdi-alert-circle' },
+        warning: { title: 'Aviso', icon: 'mdi-alert' }
       };
 
       const config = alertConfig[sb_type] || {};
@@ -201,7 +201,7 @@ export default {
         
       } catch (error) {
         
-        this.showAlert('warning', error.message || 'Error inesperado', 2000);
+        this.showAlert('warning', error.message || 'Erro inesperado', 2000);
       } finally {
       }
     
