@@ -27,7 +27,7 @@
 
 ```bash
 # Clone the repository
-$ git clone https://github.com/your-username/license_management.git
+$ git clone https://github.com/RichardLeyvaP/license_management.git
 
 # Navigate to the project folder
 $ cd license_management
@@ -106,7 +106,7 @@ This README is provided in both **English** and **Portuguese**.
 
 ```bash
 # Clonar o repositório
-$ git clone https://github.com/seu-usuario/license_management.git
+$ git clone https://github.com/RichardLeyvaP/license_management.git
 
 # Acessar a pasta do projeto
 $ cd license_management
