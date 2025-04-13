@@ -9,7 +9,7 @@
 />
   <v-dialog v-model="dialogModel" max-width="600px" persistent>
     <v-card>
-      <v-card-title class="text-h5">Crear Usuario</v-card-title>
+      <v-card-title class="text-h5">Criar usuário</v-card-title>
       <v-card-text>
         <v-form @submit.prevent="handleSubmit" ref="formRef">
           <!-- Campo Nombre de Usuario -->
@@ -55,14 +55,18 @@
             :rules="emailRules"
             type="email"
           />
+          <v-row>
+  <v-col class="text-left">
+    <v-btn color="red" class="mt-2" @click="closeDialog">Cerrar</v-btn>
+  </v-col>
+  <v-col class="text-right">
+    <v-btn type="submit" color="green" class="mt-2">Criar usuário</v-btn>
+  </v-col>
+</v-row>
 
-          <v-btn type="submit" color="green" class="mt-4">Crear Usuario</v-btn>
         </v-form>
       </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="red" @click="closeDialog">Cerrar</v-btn>
-      </v-card-actions>
+      
     </v-card>
   </v-dialog>
 </template>

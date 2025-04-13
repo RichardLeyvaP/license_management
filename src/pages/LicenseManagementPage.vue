@@ -35,22 +35,17 @@
             class="mb-4"
           />
           
-          <v-card-actions class="px-0">
-            <v-spacer></v-spacer>
-            <v-btn 
-              color="red darken-1" 
-              @click="closeDialog"
-            >
-              Cancelar
-            </v-btn>
-            <v-btn 
-              color="green darken-1" 
-              type="submit"
-              :loading="loading"
-            >
-              Guardar
-            </v-btn>
-          </v-card-actions>
+            <v-row>
+  <v-col class="text-left">
+    <v-btn color="red" class="mt-2" @click="closeDialog">Cancelar</v-btn>
+  </v-col>
+  <v-col class="text-right">
+    <v-btn type="submit" color="green" class="mt-2">Guardar</v-btn>
+  </v-col>
+</v-row>
+
+
+
         </v-form>
         
         <v-divider class="my-4"></v-divider>

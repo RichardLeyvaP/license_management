@@ -36,7 +36,7 @@
  
  <UserCreateDialog 
       v-model="userDialog"
-      @user-created="handleUserCreated"
+      @user-created="handleUserSaved"
     />
 
     <LicenseManagementDialog 
@@ -62,22 +62,36 @@
 
    
     <v-app-bar color="info" density="comfortable" app>
-      <v-app-bar-nav-icon @click="drawer = !drawer" />
+  <v-app-bar-nav-icon @click="drawer = !drawer" />
 
-      <v-app-bar-title  >Digiteam Field Service</v-app-bar-title>
+  <!-- Título y usuario - versión escritorio -->
+  <div class="d-none d-sm-flex flex-grow-1 align-center">
+    <v-app-bar-title>Digiteam Field Service</v-app-bar-title>
+    <v-spacer />
+    <v-btn color="#ffffff" class="mr-2">
+      <v-icon left>mdi-account-circle</v-icon>
+      {{ auth.user.username }}
+    </v-btn>
+  </div>
 
-      <v-spacer />
+  <!-- Título y usuario - versión móvil -->
+  <div class="d-flex d-sm-none flex-column flex-grow-1 px-2">
+    <span class="text-subtitle2 font-weight-bold">Digiteam Field Service</span>
+    <span class="text-caption"><v-icon left>mdi-account-circle</v-icon>  {{ auth.user.username }}</span>
+  </div>
 
-      <v-btn color="#ffffff"   class="mr-2">
-        <v-icon left>mdi-account-circle</v-icon>
-        {{ auth.user.username }}        
-      </v-btn>
+  <!-- Botón cerrar sesión -->
+  <v-btn
+    color="error"
+    @click="logout"
+    class="mr-2"
+    :class="{'text-caption': $vuetify.display.xs, 'text-body-1': !$vuetify.display.xs }"
+  >
+    <v-icon left size="18">mdi-logout</v-icon>
+    Cerrar sesión
+  </v-btn>
+</v-app-bar>
 
-      <v-btn color="error" @click="logout" class="mr-4">
-        <v-icon left>mdi-logout</v-icon>
-        Cerrar sesión
-      </v-btn>
-    </v-app-bar>
 
    
     <v-container>
@@ -150,12 +164,19 @@
   <td>{{ user.licenseType }}</td>
   <td>
     <v-btn
-      v-if="user.username !== 'admin'"
-      icon
-      @click="confirmDelete(user.username)"
-    >
-      <v-icon color="red">mdi-delete</v-icon>
-    </v-btn>
+  icon
+  :disabled="user.username === 'admin'"
+  @click="user.username !== 'admin' && confirmDelete(user.username)"
+  class="my-2"
+>
+  <v-icon
+    :color="user.username === 'admin' ? 'grey lighten-1' : 'red'"
+    size="18"
+  >
+    mdi-delete
+  </v-icon>
+</v-btn>
+
   </td>
 </tr>
 
@@ -233,9 +254,12 @@ onMounted(() => {
   }
 })
 
-function handleUserCreated(newUser) {
-  users.value = JSON.parse(localStorage.getItem('users')) || []
+function handleUserSaved() {
+  const savedUsers = JSON.parse(localStorage.getItem('users')) || []
+  users.value = savedUsers
+  userList.value = savedUsers 
 }
+
 
 function handleLicenseSaved(config) {
   const saved = JSON.parse(localStorage.getItem('license_config')) || {
@@ -243,7 +267,9 @@ function handleLicenseSaved(config) {
     loginBased: 0
   }
   licenseStats.value = saved
+  licenseConfig.value = saved 
 }
+
 
 function confirmDelete(username) {
   userToDelete.value = username
@@ -265,6 +291,7 @@ async function deleteUser() {
       showSnackbar.value = true
 
       users.value = auth.getActiveUsers()
+      handleUserSaved()
     }
   } catch (error) {
     messageSnackbar.value = 'Erro ao excluir usuário:' + error.message
